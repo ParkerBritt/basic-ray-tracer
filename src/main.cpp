@@ -1,5 +1,6 @@
 #include <iostream>
-#include <color.h>
+#include "color.h"
+#include "ray.h"
 
 void displayProgress(float progress)
 {
@@ -22,25 +23,63 @@ void displayProgress(float progress)
     std::clog << "\r[" << progressCenter << "]" << " " << percent << "%" << std::flush;
 }
 
+color rayColor(const ray& r)
+{
+    return color(0.0, 0.0, 0.0);
+}
+
 int main()
 {
-    int image_width = 1000;
-    int image_height = 1000;
+    auto aspectRatio = 16.0/9.0;
+    int imageWidth = 1000;
+    int imageHeight = imageWidth*aspectRatio;
+
+    vec3 cameraCenter(0.0, 0.0, 0.0);
+    double focalLength = 1.0;
+
+    auto viewportHeight = 2.0;
+    auto viewportWidth = viewportHeight * (static_cast<double>(imageWidth)/imageHeight);
+
+    vec3 viewportU(viewportWidth, 0.0, 0.0);
+    vec3 viewportV(0.0, -viewportHeight, 0.0);
+
+    vec3 pixelDeltaU = viewportU/imageWidth;
+    vec3 pixelDeltaV = viewportV/imageHeight;
+
+    vec3 viewportUpperLeft = 
+    (
+        cameraCenter - // start in camera center
+        vec3(0.0, 0.0, -focalLength) - // move back by focal lenngth
+        viewportU/2 - // move to left edge
+        viewportV/2 // move to top edge
+    );
+
+    // add half a pixel of padding fro the edge
+    vec3 firstPixelCenter = viewportUpperLeft + 0.5 * (pixelDeltaU + pixelDeltaV);
 
     std::cout << "P3\n";
-    std::cout << image_width << ' ' << image_height << "\n";
+    std::cout << imageWidth << ' ' << imageHeight << "\n";
     std::cout << 255 << "\n";
 
-    for (int j=0; j<image_height; ++j)
+    for (int j=0; j<imageHeight; ++j)
     {
-        displayProgress(static_cast<float>(j)/(image_height-1));
-        for(int i=0; i<image_width; ++i)
+        displayProgress(static_cast<float>(j)/(imageHeight-1));
+        for(int i=0; i<imageWidth; ++i)
         {
-            float r = static_cast<float>(i)/(image_width-1);
-            float g = static_cast<float>(j)/(image_height-1);
-            float b = 0;
+            auto pixelCenter = firstPixelCenter + (i*pixelDeltaU) + (j*pixelDeltaV);
+            auto rayDirection = pixelCenter - cameraCenter;
 
-            writeColor(std::cout, color(r,g,b));
+            auto r = ray(cameraCenter, rayDirection);
+            color pixelColor = rayColor(r);
+
+            // color pixelColor
+            // (
+            //     static_cast<float>(i)/(imageWidth-1),
+            //     static_cast<float>(j)/(imageHeight-1),
+            //     0
+            // );
+
+            writeColor(std::cout, pixelColor);
         }
     }
     std::clog << "\n-----------\nRender Complete                                \n";
