@@ -53,7 +53,7 @@ public:
 
 
 
-private:
+protected:
     // internal elements
     double elems_[3];
 

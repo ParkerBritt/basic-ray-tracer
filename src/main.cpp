@@ -1,6 +1,7 @@
 #include <iostream>
+#include <color.h>
 
-void progressBar(float progress)
+void displayProgress(float progress)
 {
     int barWidth = 20;
     std::string progressCenter = ""; 
@@ -32,18 +33,14 @@ int main()
 
     for (int j=0; j<image_height; ++j)
     {
-        progressBar(static_cast<float>(j)/(image_height-1));
+        displayProgress(static_cast<float>(j)/(image_height-1));
         for(int i=0; i<image_width; ++i)
         {
             float r = static_cast<float>(i)/(image_width-1);
             float g = static_cast<float>(j)/(image_height-1);
             float b = 0;
 
-            int r_int = r*255;
-            int g_int = g*255;
-            int b_int = b*255;
-
-            std::cout << r_int << ' ' << g_int << ' ' << b_int << "\n";
+            writeColor(std::cout, color(r,g,b));
         }
     }
     std::clog << "\n-----------\nRender Complete                                \n";
