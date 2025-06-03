@@ -26,7 +26,10 @@ void displayProgress(float progress)
 color rayColor(const ray& r)
 {
     auto unitDir = normalized(r.direction());
-    color c = color(1.0, 0.0, 0.0);
+    color c = color();
+
+    auto bias = (unitDir.y()+1)/2;
+    c = color(1.0, 1.0, 1.0) * (1.0-bias) + color(0.5, 0.7, 1.0) * bias;
     return c;
 }
 
