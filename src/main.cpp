@@ -25,14 +25,16 @@ void displayProgress(float progress)
 
 color rayColor(const ray& r)
 {
-    return color(0.0, 0.0, 0.0);
+    auto unitDir = normalized(r.direction());
+    color c = color(1.0, 0.0, 0.0);
+    return c;
 }
 
 int main()
 {
     auto aspectRatio = 16.0/9.0;
     int imageWidth = 1000;
-    int imageHeight = imageWidth*aspectRatio;
+    int imageHeight = imageWidth/aspectRatio;
 
     vec3 cameraCenter(0.0, 0.0, 0.0);
     double focalLength = 1.0;
