@@ -23,10 +23,34 @@ void displayProgress(float progress)
     std::clog << "\r[" << progressCenter << "]" << " " << percent << "%" << std::flush;
 }
 
+bool hitSphere(const point3& center, double radius, const ray& r)
+{
+    // a vector pointing from the ray origin to the center of the spehere
+    vec3 eyeToCenter = center-r.origin();
+
+    // square of magnitude
+    // same as r.length()*r.length()
+    auto a = dot(r.direction(), r.direction());
+
+    auto b = -2.0 * dot(r.direction(), eyeToCenter);
+
+    auto c = dot(eyeToCenter, eyeToCenter) - radius*radius;
+
+    auto discriminant = b*b - 4*a*c;
+
+    return discriminant >= 0;
+
+}
+
 color rayColor(const ray& r)
 {
     auto unitDir = normalized(r.direction());
     color c = color();
+
+    if(hitSphere(point3(0.0, 0.0, -1.0), 0.5, r))
+    {
+        return color(1.0, 0.0, 0.0);
+    }
 
     auto bias = (unitDir.y()+1)/2;
     c = color(1.0, 1.0, 1.0) * (1.0-bias) + color(0.5, 0.7, 1.0) * bias;
