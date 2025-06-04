@@ -5,7 +5,7 @@
 void displayProgress(float progress)
 {
     int barWidth = 20;
-    std::string progressCenter = ""; 
+    std::string progressCenter = "";
 
     int percent = progress*100;
 
@@ -23,37 +23,57 @@ void displayProgress(float progress)
     std::clog << "\r[" << progressCenter << "]" << " " << percent << "%" << std::flush;
 }
 
-bool hitSphere(const point3& center, double radius, const ray& r)
+double hitSphere(const point3& center, double radius, const ray& r)
 {
     // a vector pointing from the ray origin to the center of the spehere
     vec3 eyeToCenter = center-r.origin();
 
     // square of magnitude
     // same as r.length()*r.length()
-    auto a = dot(r.direction(), r.direction());
+    auto a = r.direction().lengthSquared();
 
-    auto b = -2.0 * dot(r.direction(), eyeToCenter);
+    auto h = dot(r.direction(), eyeToCenter);
 
-    auto c = dot(eyeToCenter, eyeToCenter) - radius*radius;
+    auto c = eyeToCenter.lengthSquared() - radius*radius;
 
-    auto discriminant = b*b - 4*a*c;
+    auto discriminant = h*h - a*c;
 
-    return discriminant >= 0;
+    if(discriminant < 0)
+    {
+        return -1.0;
+    }
+    else
+    {
+        // closest intersection
+        return (-b - std::sqrt(discriminant) ) / (2.0*a);
+    }
+
+
+}
+
+color backgroundColor(const ray& r)
+{
+    auto unitDir = normalized(r.direction());
+    auto bias = (unitDir.y()+1)/2;
+    return color(1.0, 1.0, 1.0) * (1.0-bias) + color(0.5, 0.7, 1.0) * bias;
 
 }
 
 color rayColor(const ray& r)
 {
-    auto unitDir = normalized(r.direction());
     color c = color();
 
-    if(hitSphere(point3(0.0, 0.0, -1.0), 0.5, r))
+    point3 sphereCenter = point3(0.0, 0.0, -1.0);
+    auto t = hitSphere(sphereCenter, 0.5, r);
+    if(t > 0.0)
     {
-        return color(1.0, 0.0, 0.0);
+        vec3 normal = normalized(vec3(r.at(t)-sphereCenter));
+        color normalColor = color(normal.x()+1, normal.y()+1, normal.z()+1) * 0.5;
+        return normalColor;
     }
 
-    auto bias = (unitDir.y()+1)/2;
-    c = color(1.0, 1.0, 1.0) * (1.0-bias) + color(0.5, 0.7, 1.0) * bias;
+
+    c = backgroundColor(r);
     return c;
 }
 
@@ -75,10 +95,10 @@ int main()
     vec3 pixelDeltaU = viewportU/imageWidth;
     vec3 pixelDeltaV = viewportV/imageHeight;
 
-    vec3 viewportUpperLeft = 
+    vec3 viewportUpperLeft =
     (
         cameraCenter - // start in camera center
-        vec3(0.0, 0.0, -focalLength) - // move back by focal lenngth
+        vec3(0.0, 0.0, focalLength) - // move back by focal lenngth
         viewportU/2 - // move to left edge
         viewportV/2 // move to top edge
     );
